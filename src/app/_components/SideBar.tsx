@@ -49,6 +49,7 @@ function SideBar({user_name}: SideBarProps) {
                 <Link href={'/dashboard'} className={`mt-20 flex gap-3 ${!isOpen && 'justify-center'} hover:bg-gray-700 rounded-lg py-3 px-2`}> <Image className='h-5 w-5' src={HomeImage} alt="Home" /> {isOpen && <span className={`transition ease-in-out duration-500 ${isOpen? "opacity-100" : "opacity-0"}`}>Overview</span>}</Link>
                 <Link href="/view-spendings" className={`flex gap-3 ${!isOpen && 'justify-center'} hover:bg-gray-700 rounded-lg py-3 px-2`}><Image className='h-5 w-5' src={ViewSpendingsIcon} alt="View Spendings" /> {isOpen && <span className={`transition ease-in-out duration-500 ${isOpen? "opacity-100" : "opacity-0"}`}>View Spendings</span>}</Link>
                 <Link href="/add-spending" className={`flex gap-3 ${!isOpen && 'justify-center'} hover:bg-gray-700 rounded-lg py-3 px-2`}><Image className='h-5 w-5' src={AddSpendingIcon} alt="Add Spending" /> {isOpen && <span className={`transition ease-in-out duration-500 ${isOpen? "opacity-100" : "opacity-0"}`}>Add Spending</span>}</Link>
+                <Link href="/add-budget" className={`flex gap-3 ${!isOpen && 'justify-center'} hover:bg-gray-700 rounded-lg py-3 px-2`}><Image className='h-5 w-5' src={AddSpendingIcon} alt="Add Budget" /> {isOpen && <span className={`transition ease-in-out duration-500 ${isOpen? "opacity-100" : "opacity-0"}`}>Add Budget</span>}</Link>
             </div>
 
             <div className={`flex flex-col gap-4 ${isOpen ? 'relative': ''}`}>

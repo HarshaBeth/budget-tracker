@@ -28,7 +28,6 @@ export default function AddSpending() {
           console.error('Error adding item:', error);
           alert('Error adding item');
         } else {
-          console.log('Item added:', data);
           alert('Item added successfully');
           setItem('');
           setCost('');
