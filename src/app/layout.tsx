@@ -3,7 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SideBar from "./_components/SideBar";
 import { createClient } from "@/lib/supabase/server";
-
+import { SidebarProvider, useSidebar } from "./_context/SidebarContext";
+import ClientLayout from "./_context/ClientLayout";
+import LayoutClient from "./_context/ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,17 +27,19 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const supabase = await createClient();
   const session = await supabase.auth.getUser();
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex`}
-      >
-        {session.data.user && <SideBar user_name={session.data.user?.user_metadata.full_name} />}
-        {children}
+      <body className="antialiased flex">
+        {session.data.user ? (
+          <LayoutClient userName={session.data.user.user_metadata.full_name}>
+            {children}
+          </LayoutClient>
+        ) : (
+          children
+        )}
       </body>
     </html>
   );

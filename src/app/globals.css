@@ -120,3 +120,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+html,
+body {
+  overflow-x: visible;
+}
+
+@layer base {
+  html,
+  body {
+    @apply overflow-x-visible;
+  }
+}
+

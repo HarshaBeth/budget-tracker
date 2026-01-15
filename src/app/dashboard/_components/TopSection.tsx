@@ -22,7 +22,7 @@ function TopSection() {
       }
     };
     fetchBudget();
-  }, [totalBudget]);
+  }, []);
 
   useEffect(() => {
     const fetchTotalBudgetUsed = async () => {
@@ -39,7 +39,6 @@ function TopSection() {
           0
         );
         setTotalBudgetUsed(totalUsed);
-        console.log(totalUsed);
       }
     };
     fetchTotalBudgetUsed();
@@ -69,7 +68,6 @@ function TopSection() {
           }
         });
         setCategoriesBudgetUsed(categoryTotals);
-        console.log(categoryTotals);
       }
     };
     fetchCategoryBudgetUsed();
