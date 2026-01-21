@@ -110,6 +110,9 @@ export default function AddSpending() {
               className="border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
+              <option value="" disabled>
+                Select Category
+              </option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.name}>
                   {cat.name}

@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
         const {data: { user }} = await supabase.auth.getUser();
+        console.log("AUTH CALLBACK HIT");
 
         if (user) {
             // Create profile if it doesn't exist
@@ -24,13 +25,15 @@ export async function GET(request: Request) {
                 .from("profiles")
                 .select("id")
                 .eq("id", user.id)
-                .single();
+                .maybeSingle();
 
             if (!profile) {
-                await supabase.from("profiles").insert({
+                const {error: insertError} = await supabase.from("profiles").insert({
                 id: user.id,
                 full_name: user.user_metadata.full_name,
                 });
+
+                console.log("PROFILE INSERT ERROR:", insertError);
             }
         }
 
