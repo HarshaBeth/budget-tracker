@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase/client";
 import React, { useEffect, useState } from "react";
 import DeleteIcon from "../../../../public/delete_icon.png";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 type Spending = {
   id: number;
@@ -81,12 +82,15 @@ function ViewSpending() {
   };
 
   if (loading) return <p className="text-3xl text-gray-400">Loading...</p>;
-  if (spending.length === 0)
+  if (spending.length === 0 && userName !== "User")
     return (
-      <p className="text-3xl font-mono mt-4">You have not added any spending</p>
+      <p className="text-3xl font-mono mt-4">
+        You have not added any spending {userName}
+      </p>
     );
+
   return (
-    <div className="flex flex-col items-center gap-4 h-full w-full ">
+    <div className="flex flex-col items-center gap-4 h-full w-full">
       <h1 className="text-2xl font-bold font-serif">
         {userName}&apos;s Spending History
       </h1>

@@ -161,13 +161,16 @@ function SideBar({ user_name }: SideBarProps) {
           )}
 
           <div
-            className={`flex flex-col ${isOpen ? "hidden" : "visible"} gap-2`}
+            className={`flex flex-col ${isOpen ? "hidden" : "visible"} gap-2 items-center`}
           >
-            <button className=" flex justify-center">
+            <button
+              onClick={signOut}
+              className=" flex justify-center bg-gray-500/45 hover:bg-gray-500/60 transition w-fit pl-2 pr-1.5 rounded-lg py-2"
+            >
               <Image
                 src={ExitIcon}
                 alt="Exit"
-                className="h-6 w-6 bg-red-200/45 rounded-md my-2"
+                className="h-5 w-5  rounded-sm "
               />
             </button>
 

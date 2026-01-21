@@ -1,6 +1,7 @@
 import { createClient } from "../../lib/supabase/server";
 import { Suspense } from "react";
 import ViewSpending from "./_components/ViewSpending";
+import { redirect } from "next/navigation";
 
 async function TotalSpending() {
   const supabase = await createClient();
@@ -27,7 +28,14 @@ async function TotalSpending() {
   );
 }
 
-export default function ViewSpendings() {
+export default async function ViewSpendings() {
+  const supabase = await createClient();
+  const user = await supabase.auth.getUser();
+
+  if (!user.data.user) {
+    redirect("/auth");
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-200 flex-1">
       <div className=" flex flex-col items-center p-4 max-w-7xl  h-full">

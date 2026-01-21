@@ -1,11 +1,14 @@
 "use client";
 import { supabase } from "@/lib/supabase/client";
+import { redirect } from "next/navigation";
 import React, { useState, useEffect } from "react";
 
 export default function AddSpending() {
   const [item, setItem] = useState("");
   const [cost, setCost] = useState("");
   const [category, setCategory] = useState("");
+
+
 
   const handleItemAdded = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,22 +44,26 @@ export default function AddSpending() {
   };
 
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const user = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        redirect("/auth");
+      }
       const { data, error } = await supabase
         .from("budget_categories")
         .select("category")
-        .eq("user_id", user.data.user?.id);
+        .eq("user_id", user?.id);
 
       if (error) {
         console.error("Error fetching categories:", error);
       } else if (data) {
         const uniqueCategories = Array.from(
-          new Set(data.map((cat) => cat.category))
+          new Set(data.map((cat) => cat.category)),
         ).map((cat, index) => ({ id: index.toString(), name: cat }));
         setCategories(uniqueCategories);
       }

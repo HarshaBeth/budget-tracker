@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Next.js build output (we rebuild inside Docker)
+.next
+
+# Env files (handled via Docker / Compose)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / Editor junk
+.DS_Store
+.vscode
+.idea
+
+# Git
+.git
+.gitignore

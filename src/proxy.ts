@@ -28,7 +28,7 @@ export async function proxy(req: NextRequest) {
 
   const path = req.nextUrl.pathname;
 
-  // Block unauthenticated users from dashboard
+  // Block unauthenticated users from secret paths
   if (!user && (path.startsWith("/dashboard") || path.startsWith("/add-spending") || path.startsWith("/view-spendings"))) {
     return NextResponse.redirect(new URL("/auth", req.url));
   }
