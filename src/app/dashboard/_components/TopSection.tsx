@@ -79,7 +79,7 @@ function TopSection() {
   }
 
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-4 font-serif max-lg:flex-col w-full h-full justify-center items-center">
       <ChartPieDonutText
         title="Budget Usage"
         data={[

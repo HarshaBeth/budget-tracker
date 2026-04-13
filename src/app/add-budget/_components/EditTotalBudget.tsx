@@ -165,7 +165,7 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
       <div>
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4 bg-white p-6 rounded-md shadow-md w-full max-w-md "
+          className="flex flex-col gap-4 bg-white p-6 rounded-md shadow-md w-full max-w-md max-md:max-w-sm"
         >
           <h1 className="text-2xl font-bold mb-1 text-black font-serif">
             Set or Update Your Total Budget:
@@ -192,10 +192,10 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
       </div>
 
       {/* Add Categories Here */}
-      <div className="bg-white p-6 rounded-md shadow-md w-full max-w-md mt-4 ">
+      <div className="bg-white p-6 rounded-md shadow-md w-full max-w-md mt-4 max-md:max-w-sm">
         <span className="flex flex-col mb-4">
-          <h2 className="text-xl font-semibold">Allocate Your Budget</h2>
-          <h5 className="text-gray-500 text-sm ">
+          <h2 className="text-xl font-semibold font-serif">Allocate Your Budget</h2>
+          <h5 className="text-gray-500 text-sm font-serif">
             Split your budget to track your expenses effectively
           </h5>
         </span>
@@ -207,7 +207,7 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
             placeholder="Category (e.g. Food)"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="flex-1 border rounded-md p-2"
+            className="flex-1 border rounded-md p-2 max-md:w-33"
             required
           />
 

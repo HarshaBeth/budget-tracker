@@ -103,11 +103,11 @@ export default function AddSpending() {
   }
 
   return (
-    <div className="flex justify-center bg-gray-200 h-screen flex-1">
-      <div className="max-w-7xl p-10 w-5xl flex justify-center  items-center">
+    <div className="flex justify-center bg-gray-200 min-h-screen w-full">
+      <div className="max-w-7xl p-10 flex justify-center items-center">
         <form
           onSubmit={handleItemAdded}
-          className="flex flex-col gap-4 bg-white p-6 rounded-md shadow-md w-full max-w-md "
+          className="flex flex-col gap-4 bg-white p-6 rounded-md shadow-md w-full max-w-md"
         >
           <h1 className="text-2xl font-bold mb-1 text-black font-serif">
             Add Your Spending:

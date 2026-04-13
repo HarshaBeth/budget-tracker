@@ -29,7 +29,7 @@ async function page() {
     <div className="min-h-screen w-full flex flex-col flex-1 py-20 items-center bg-gray-200">
       <div className="flex flex-col gap-4 items-center max-w-7xl ">
         <div className="w-full flex justify-start">
-          <h1 className="font-sans text-3xl font-bold">
+          <h1 className="font-serif text-xl font-bold">
             Your Budget: ${totalBudget}
           </h1>
         </div>

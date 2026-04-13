@@ -99,10 +99,10 @@ function ViewSpending() {
 
   return (
     <div className="flex flex-col items-center gap-4 h-full w-full">
-      <h1 className="text-2xl font-bold font-serif">
+      <h1 className="text-2xl font-serif font-semibold text-gray-700 max-md:text-xl">
         {userName}&apos;s Spending History
       </h1>
-      <table className="w-full border-collapse">
+      <table className="w-full border-collapse max-md:w-full">
         <thead>
           <tr className="bg-gray-400">
             <th className="border px-4 py-2">Category</th>
@@ -124,7 +124,7 @@ function ViewSpending() {
               </td>
               <td className="border px-4 py-2">{item.item}</td>
               <td className="border px-4 py-2">${item.cost}</td>
-              <td className="border px-4 py-2 bg-gray-200">
+              <td className="border px-4 py-2 bg-gray-200 max-md:px-1">
                 <button
                   onClick={() => handleDelete(item.id)}
                   className="bg-red-400/45 px-1 py-1 rounded-md hover:bg-red-500/60 hover:cursor-pointer"
@@ -132,7 +132,7 @@ function ViewSpending() {
                   <Image
                     src={DeleteIcon}
                     alt="Delete"
-                    className="h-5 w-5 mx-auto"
+                    className="h-5 w-5 mx-auto max-md:mx-0"
                   />
                 </button>
               </td>
@@ -141,7 +141,7 @@ function ViewSpending() {
         </tbody>
       </table>
 
-      <span className="font-bold font-sans text-2xl">
+      <span className="font-bold font-serif text-2xl">
         Total Spending: ${totalSpending}
       </span>
     </div>
