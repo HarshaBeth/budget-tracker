@@ -1,9 +1,9 @@
 "use client";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import { supabase } from "@/lib/supabase/client";
 import React, { useEffect, useState } from "react";
 import DeleteIcon from "../../../../public/delete_icon.png";
 import Image from "next/image";
-import { redirect } from "next/navigation";
 
 type Spending = {
   id: number;
@@ -54,7 +54,7 @@ function ViewSpending() {
         setSpending(data as Spending[]);
       }
 
-      const { data: spendingCosts, error: costError } = await supabase
+      const { data: spendingCosts } = await supabase
         .from("Spendings")
         .select("cost")
         .eq("user_id", user.id);
@@ -81,7 +81,15 @@ function ViewSpending() {
     setSpending((prev) => prev.filter((item) => item.id !== id));
   };
 
-  if (loading) return <p className="text-3xl text-gray-400">Loading...</p>;
+  if (loading)
+    return (
+      <LoadingScreen
+        title="Loading spending history"
+        description="Gathering your latest transactions and totals."
+        variant="section"
+        panelCount={1}
+      />
+    );
   if (spending.length === 0 && userName !== "User")
     return (
       <p className="text-3xl font-mono mt-4">

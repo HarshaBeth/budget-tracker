@@ -1,5 +1,7 @@
 "use client";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import { supabase } from "@/lib/supabase/client";
+import { clearStaleSpendings } from "@/lib/spendings";
 import { redirect } from "next/navigation";
 import React, { useState, useEffect } from "react";
 
@@ -7,8 +9,7 @@ export default function AddSpending() {
   const [item, setItem] = useState("");
   const [cost, setCost] = useState("");
   const [category, setCategory] = useState("");
-
-
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   const handleItemAdded = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,12 +24,25 @@ export default function AddSpending() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { data, error } = await supabase.from("Spendings").insert([
+    if (!user) {
+      alert("You must be signed in to add spending");
+      return;
+    }
+
+    const { error: resetError } = await clearStaleSpendings(supabase, user.id);
+
+    if (resetError) {
+      console.error("Error clearing old spendings:", resetError);
+      alert("Error resetting last month's spendings");
+      return;
+    }
+
+    const { error } = await supabase.from("Spendings").insert([
       {
         item: item,
         cost: parseFloat(cost),
         category: category,
-        user_id: user?.id,
+        user_id: user.id,
       },
     ]);
 
@@ -49,27 +63,44 @@ export default function AddSpending() {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-      if (!user) {
-        redirect("/auth");
-      }
-      const { data, error } = await supabase
-        .from("budget_categories")
-        .select("category")
-        .eq("user_id", user?.id);
+        if (!user) {
+          redirect("/auth");
+        }
 
-      if (error) {
-        console.error("Error fetching categories:", error);
-      } else if (data) {
-        const uniqueCategories = Array.from(
-          new Set(data.map((cat) => cat.category)),
-        ).map((cat, index) => ({ id: index.toString(), name: cat }));
-        setCategories(uniqueCategories);
+        const { data, error } = await supabase
+          .from("budget_categories")
+          .select("category")
+          .eq("user_id", user?.id);
+
+        if (error) {
+          console.error("Error fetching categories:", error);
+        } else if (data) {
+          const uniqueCategories = Array.from(
+            new Set(data.map((cat) => cat.category)),
+          ).map((cat, index) => ({ id: index.toString(), name: cat }));
+          setCategories(uniqueCategories);
+        }
+      } finally {
+        setLoadingCategories(false);
       }
     };
     fetchCategories();
   }, []);
+
+  if (loadingCategories) {
+    return (
+      <LoadingScreen
+        title="Loading spending form"
+        description="Getting your budget categories ready."
+        panelCount={1}
+      />
+    );
+  }
 
   return (
     <div className="flex justify-center bg-gray-200 h-screen flex-1">
@@ -99,6 +130,7 @@ export default function AddSpending() {
               value={cost}
               onChange={(e) => setCost(e.target.value)}
               min="0"
+              step="0.01"
               className="border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />

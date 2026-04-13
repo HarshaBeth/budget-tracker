@@ -1,5 +1,6 @@
 "use client";
 import AccordionComponent from "@/components/ui/AccordionComponent";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import { supabase } from "@/lib/supabase/client";
 import React, { useState, useEffect } from "react";
 
@@ -15,52 +16,55 @@ function SecondSection() {
 
   useEffect(() => {
     async function fetchData() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-      if (!user) return;
+        if (!user) return;
 
-      /** 1️⃣ Fetch budget categories */
-      const { data: categories, error: categoriesError } = await supabase
-        .from("budget_categories")
-        .select("category, amount")
-        .eq("user_id", user.id);
+        /** 1️⃣ Fetch budget categories */
+        const { data: categories, error: categoriesError } = await supabase
+          .from("budget_categories")
+          .select("category, amount")
+          .eq("user_id", user.id);
 
-      if (categoriesError) {
-        console.error(categoriesError);
-        return;
+        if (categoriesError) {
+          console.error(categoriesError);
+          return;
+        }
+
+        /** 2️⃣ Fetch spending */
+        const { data: spending, error: spendingError } = await supabase
+          .from("Spendings")
+          .select("category, cost")
+          .eq("user_id", user.id);
+
+        if (spendingError) {
+          console.error(spendingError);
+          return;
+        }
+
+        /** 3️⃣ Aggregate spendings by category */
+        const spentByCategory = (spending ?? []).reduce<Record<string, number>>(
+          (acc, curr) => {
+            acc[curr.category] = (acc[curr.category] || 0) + curr.cost;
+            return acc;
+          },
+          {}
+        );
+
+        /** 4️⃣ Merge budgets + usage */
+        const merged: CategoryBudget[] = categories.map((cat) => ({
+          category: cat.category,
+          allocated: cat.amount,
+          used: spentByCategory[cat.category] ?? 0,
+        }));
+
+        setData(merged);
+      } finally {
+        setLoading(false);
       }
-
-      /** 2️⃣ Fetch spending */
-      const { data: spending, error: spendingError } = await supabase
-        .from("Spendings")
-        .select("category, cost")
-        .eq("user_id", user.id);
-
-      if (spendingError) {
-        console.error(spendingError);
-        return;
-      }
-
-      /** 3️⃣ Aggregate spendings by category */
-      const spentByCategory = (spending ?? []).reduce<Record<string, number>>(
-        (acc, curr) => {
-          acc[curr.category] = (acc[curr.category] || 0) + curr.cost;
-          return acc;
-        },
-        {}
-      );
-
-      /** 4️⃣ Merge budgets + usage */
-      const merged: CategoryBudget[] = categories.map((cat) => ({
-        category: cat.category,
-        allocated: cat.amount,
-        used: spentByCategory[cat.category] ?? 0,
-      }));
-
-      setData(merged);
-      setLoading(false);
     }
 
     fetchData();
@@ -69,7 +73,12 @@ function SecondSection() {
   return (
     <div>
       {loading ? (
-        <div className="text-sm text-muted-foreground">Loading…</div>
+        <LoadingScreen
+          title="Loading category details"
+          description="Calculating allocated and used amounts by category."
+          variant="section"
+          panelCount={1}
+        />
       ) : (
         <AccordionComponent data={data} />
       )}

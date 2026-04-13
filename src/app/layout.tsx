@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
+import { clearStaleSpendings } from "@/lib/spendings";
 
 import LayoutClient from "./_context/ClientLayout";
 
@@ -28,9 +29,20 @@ export default async function RootLayout({
   const supabase = await createClient();
   const session = await supabase.auth.getUser();
 
+  if (session.data.user) {
+    const { error } = await clearStaleSpendings(supabase, session.data.user.id);
+
+    if (error) {
+      console.error("Error clearing stale spendings:", error);
+    }
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased flex" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex`}
+        suppressHydrationWarning
+      >
         {session.data.user ? (
           <LayoutClient userName={session.data.user.user_metadata.full_name}>
             {children}

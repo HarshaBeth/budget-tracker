@@ -1,4 +1,5 @@
 "use client";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import { supabase } from "@/lib/supabase/client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
@@ -6,21 +7,25 @@ import UpdateIcon from "../../../../public/update_pencil_icon.png";
 import DeleteIcon from "../../../../public/delete_icon.png";
 
 type Props = {
-  handleTotalBudgetUpdate: (totalBudget: number) => Promise<void>;
+  handleTotalBudgetUpdate: (
+    totalBudget: number,
+  ) => Promise<{ id: string; total_budget: number }>;
 };
 
 function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
   const [totalBudget, setTotalBudget] = useState("");
   const [dbTotalBudget, setDbTotalBudget] = useState<number>(0);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const amount = Number(totalBudget);
     if (isNaN(amount)) return;
     handleTotalBudgetUpdate(amount)
-      .then(() => {
+      .then((budget) => {
         alert("Total budget updated successfully");
-        setDbTotalBudget(amount);
+        setBudgetId(budget.id);
+        setDbTotalBudget(budget.total_budget);
         setTotalBudget("");
       })
       .catch((error) => {
@@ -40,43 +45,60 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [budgetId, setBudgetId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadBudget = async () => {
-      const { data } = await supabase
-        .from("budgets")
-        .select("id, total_budget")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+  const fetchCategories = async (currentBudgetId: string) => {
+    if (!currentBudgetId) return;
 
-      if (data) {
-        setBudgetId(data.id);
-        setDbTotalBudget(data.total_budget);
-      }
-    };
-
-    loadBudget();
-  }, []);
-
-  const fetchCategories = async () => {
-    if (!budgetId) return;
-
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("budget_categories")
       .select("id, category, amount")
-      .eq("budget_id", budgetId)
+      .eq("budget_id", currentBudgetId)
       .order("created_at");
+
+    if (error) {
+      console.error("Error loading budget categories:", error);
+      return;
+    }
 
     if (data) setCategories(data);
   };
 
   useEffect(() => {
-    if (!budgetId) return;
+    const loadBudget = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-    (async () => {
-      await fetchCategories();
-    })();
-  }, [budgetId]);
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from("budgets")
+          .select("id, total_budget")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error loading budget:", error);
+          return;
+        }
+
+        if (data) {
+          setBudgetId(data.id);
+          setDbTotalBudget(data.total_budget);
+          await fetchCategories(data.id);
+          return;
+        }
+
+        setBudgetId(null);
+        setDbTotalBudget(0);
+        setCategories([]);
+      } finally {
+        setIsInitialLoading(false);
+      }
+    };
+
+    loadBudget();
+  }, []);
 
   const allocated = categories
     .filter((c) => c.category.toLowerCase() !== "miscellaneous")
@@ -93,9 +115,10 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
       const { data: miscData, error: miscError } = await supabase
         .from("budget_categories")
         .select("id, amount")
+        .eq("budget_id", budgetId)
         .eq("user_id", user.data.user?.id)
         .eq("category", "miscellaneous")
-        .single();
+        .maybeSingle();
 
       if (miscError) {
         console.error("Error fetching miscellaneous category:", miscError);
@@ -126,6 +149,17 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
     newAmount > 0 &&
     newAmount <= remaining;
 
+  if (isInitialLoading) {
+    return (
+      <LoadingScreen
+        title="Loading your budget"
+        description="Pulling in your total budget and category allocations."
+        variant="section"
+        panelCount={2}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col justify-center items-center">
       <div>
@@ -134,7 +168,7 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
           className="flex flex-col gap-4 bg-white p-6 rounded-md shadow-md w-full max-w-md "
         >
           <h1 className="text-2xl font-bold mb-1 text-black font-serif">
-            Update Your Monthly Total Budget:
+            Set or Update Your Total Budget:
           </h1>
           <input
             required
@@ -144,13 +178,13 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
             onChange={(e) => setTotalBudget(e.target.value)}
             name="totalBudget"
             className="border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter new total budget"
+            placeholder="Enter your total budget"
           />
           <button
             type="submit"
             className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-900 transition-colors font-sans"
           >
-            Update Budget
+            Save Budget
           </button>
         </form>
 
@@ -206,7 +240,7 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
               if (!error) {
                 setCategory("");
                 setAmount("");
-                fetchCategories();
+                fetchCategories(budgetId);
               }
             }}
             className={`px-4 transition-colors rounded-md ${
@@ -262,11 +296,11 @@ function EditTotalBudget({ handleTotalBudgetUpdate }: Props) {
                         return;
                       }
 
-                      const { data, error } = await supabase
+                      const { error } = await supabase
                         .from("budget_categories")
                         .update({ amount: newAmount })
                         .eq("id", c.id)
-                        .select()
+                        .select("id")
                         .single();
 
                       if (error) {

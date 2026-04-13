@@ -1,69 +1,92 @@
-'use server'
+"use server";
 
-import { redirect } from 'next/navigation'
-import { createClient } from './supabase/server'
+import { redirect } from "next/navigation";
+import { createClient } from "./supabase/server";
 
-const SignInWith = (provider: string) => {
-  return async (formData: FormData) => {
-    const supabase = await createClient()
+type BudgetRow = {
+  id: string;
+  total_budget: number;
+};
 
-    const auth_callback_url = `${process.env.SITE_URL}/auth/callback`
+const SignInWith = (provider: "google") => {
+  return async () => {
+    const supabase = await createClient();
 
-    const {data, error} = await supabase.auth.signInWithOAuth({
-      provider: provider as any,
+    const auth_callback_url = `${process.env.SITE_URL}/auth/callback`;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
       options: {
         redirectTo: auth_callback_url,
       },
-    })
+    });
 
     console.log(data);
 
     if (error) {
-      console.log(error)
+      console.log(error);
     }
 
     if (data.url) {
-      redirect(data.url)
+      redirect(data.url);
     }
-  }
-}
+  };
+};
 
-const signinWithGoogle = SignInWith('google')
+const signinWithGoogle = SignInWith("google");
 
 const signOut = async () => {
-   const supabase = await createClient();
-   await supabase.auth.signOut();
-}
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+};
 
-const updateTotalBudget = async ( totalBudget: number) => {
+const updateTotalBudget = async (totalBudget: number): Promise<BudgetRow> => {
   const supabase = await createClient();
 
-    const {
+  const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
-  if (!user) throw new Error("Not authenticated")
-  
-  const now = new Date()
+  if (!user) throw new Error("Not authenticated");
 
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  const monthDate = `${year}-${month}-01`
-
-  
-  const { error } = await supabase.from('budgets').upsert({
-    month: monthDate,
+  const budgetValues = {
     total_budget: totalBudget,
     user_id: user.id,
-  },
-  {onConflict: "user_id,month"}
-)
+  };
+
+  let result = await supabase
+    .from("budgets")
+    .upsert(budgetValues, { onConflict: "user_id" })
+    .select("id, total_budget")
+    .single();
+
+  if (
+    result.error?.code === "23502" &&
+    result.error.message.toLowerCase().includes("month")
+  ) {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const monthDate = `${now.getFullYear()}-${month}-01`;
+
+    result = await supabase
+      .from("budgets")
+      .upsert(
+        {
+          ...budgetValues,
+          month: monthDate,
+        },
+        { onConflict: "user_id" },
+      )
+      .select("id, total_budget")
+      .single();
+  }
+
+  const { data, error } = result;
 
   if (error) throw error;
-}
 
-export { signinWithGoogle, signOut, updateTotalBudget }
+  return data;
+};
 
-
-
+export { signinWithGoogle, signOut, updateTotalBudget };
 

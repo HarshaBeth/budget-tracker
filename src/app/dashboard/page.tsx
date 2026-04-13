@@ -16,7 +16,7 @@ async function page() {
     .from("budgets")
     .select("total_budget")
     .eq("user_id", session.data.user.id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error("Error fetching budget:", error);
@@ -30,7 +30,7 @@ async function page() {
       <div className="flex flex-col gap-4 items-center max-w-7xl ">
         <div className="w-full flex justify-start">
           <h1 className="font-sans text-3xl font-bold">
-            Your Monthly Budget: ${totalBudget}
+            Your Budget: ${totalBudget}
           </h1>
         </div>
         <div className="flex gap-4 h-full w-full justify-center flex-col items-center ">

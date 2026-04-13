@@ -6,17 +6,11 @@ async function getCurrentBudgetId() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const monthDate = `${year}-${month}-01`;
-
   const { data, error } = await supabase
     .from("budgets")
     .select("id, total_budget")
     .eq("user_id", user.id)
-    .eq("month", monthDate)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;
